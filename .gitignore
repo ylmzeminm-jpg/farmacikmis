@@ -1,0 +1,6 @@
+*.txt
+*.pdf
+*.json
+Modül 6 Çıkmışları/
+.claude/
+node_modules/
