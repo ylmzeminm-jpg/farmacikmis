@@ -1,4 +1,4 @@
-const CACHE = 'farma-v1';
+const CACHE = 'farma-v2';
 const FILES = ['./index.html', './manifest.json', './ikon-192.png', './ikon-512.png'];
 
 self.addEventListener('install', e => {

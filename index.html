@@ -51,6 +51,8 @@ a{color:var(--accent);}
 .filter-chip{padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--bg);color:var(--sub);font-size:.75rem;cursor:pointer;transition:all .2s;}
 .filter-chip.active{background:var(--tag-bg);color:var(--tag-text);border-color:var(--accent2);}
 #result-count{color:var(--sub);font-size:.8rem;margin-left:auto;}
+.gchip{padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--bg);color:var(--sub);font-size:.75rem;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.gchip.active{background:var(--gc,var(--accent));color:#fff;border-color:var(--gc,var(--accent));}
 
 /* GRID */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;padding:24px;}
@@ -177,6 +179,9 @@ a{color:var(--accent);}
   .filter-row{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
   .filter-row::-webkit-scrollbar{display:none;}
   .filter-chip{white-space:nowrap;font-size:.72rem;padding:4px 10px;}
+  #groupFilterRow{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  #groupFilterRow::-webkit-scrollbar{display:none;}
+  .gchip{font-size:.72rem;padding:4px 10px;}
   #result-count{display:none;}
 
   /* grid: tek sütun */
@@ -318,6 +323,21 @@ a{color:var(--accent);}
     <button class="filter-chip" id="starFilterChip" onclick="setFilter('yildiz')">⭐ Yıldızlananlar</button>
     <span id="result-count"></span>
   </div>
+  <div class="filter-row" id="groupFilterRow">
+    <span style="font-size:.75rem;color:var(--sub)">Grup:</span>
+    <button class="gchip active" data-g="all" onclick="setGroupFilter('all')">Tümü</button>
+    <button class="gchip" data-g="Antiepileptik" onclick="setGroupFilter('Antiepileptik')" style="--gc:#4f46e5">⚡ Antiepileptik</button>
+    <button class="gchip" data-g="Antiparkinson" onclick="setGroupFilter('Antiparkinson')" style="--gc:#0891b2">🫧 Antiparkinson</button>
+    <button class="gchip" data-g="Antidepresan" onclick="setGroupFilter('Antidepresan')" style="--gc:#7c3aed">💜 Antidepresan</button>
+    <button class="gchip" data-g="Antipsikotik" onclick="setGroupFilter('Antipsikotik')" style="--gc:#dc2626">🔴 Antipsikotik</button>
+    <button class="gchip" data-g="NSAİİ" onclick="setGroupFilter('NSAİİ')" style="--gc:#ea580c">💊 NSAİİ</button>
+    <button class="gchip" data-g="Opioid" onclick="setGroupFilter('Opioid')" style="--gc:#d97706">🟠 Opioid</button>
+    <button class="gchip" data-g="Migren" onclick="setGroupFilter('Migren')" style="--gc:#be185d">🤯 Migren</button>
+    <button class="gchip" data-g="Kas Gevşetici" onclick="setGroupFilter('Kas Gevşetici')" style="--gc:#15803d">💪 Kas Gevşetici</button>
+    <button class="gchip" data-g="Anestezik" onclick="setGroupFilter('Anestezik')" style="--gc:#0f766e">😴 Anestezik</button>
+    <button class="gchip" data-g="Sedatif/Hipnotik" onclick="setGroupFilter('Sedatif/Hipnotik')" style="--gc:#6d28d9">💤 Sedatif/Hipnotik</button>
+    <button class="gchip" data-g="Diğer" onclick="setGroupFilter('Diğer')" style="--gc:#64748b">📋 Diğer</button>
+  </div>
 </div>
 
 <div class="starred-bar" id="starredBar">
@@ -351,6 +371,7 @@ const DRUGS = [{"isim":"parasetamol","dogru_cevap_sayisi":3,"sik_sayisi":8,"topl
 
 let sortMode = 'toplam';
 let filterMode = 'all';
+let groupFilter = 'all';
 let searchTerm = '';
 let openCard = null;
 
@@ -387,6 +408,7 @@ function getFiltered(){
   else if(filterMode==='cok') list=list.filter(d=>d.toplam>=4);
   else if(filterMode==='hic') list=list.filter(d=>d.dogru_cevap_sayisi===0);
   else if(filterMode==='yildiz') list=list.filter(d=>starredDrugs.has(d.isim));
+  if(groupFilter!=='all') list=list.filter(d=>getGroupTag(d)===groupFilter);
   if(searchTerm){
     const s=searchTerm.toLowerCase();
     list=list.filter(d=>
@@ -548,7 +570,11 @@ function toggleCard(rank){
   if(openCard && openCard!==card) openCard.classList.remove('open');
   card.classList.toggle('open', !wasOpen);
   openCard = wasOpen ? null : card;
-  if(!wasOpen) setTimeout(()=>card.scrollIntoView({behavior:'smooth',block:'nearest'}),100);
+  if(!wasOpen) setTimeout(()=>{
+    const ctrlBottom = document.querySelector('.controls').getBoundingClientRect().bottom;
+    const cardTop = card.getBoundingClientRect().top;
+    window.scrollBy({top: cardTop - ctrlBottom - 8, behavior:'smooth'});
+  },100);
 }
 
 function setSort(mode){
@@ -561,6 +587,13 @@ function setSort(mode){
 function setFilter(mode){
   filterMode = mode;
   document.querySelectorAll('.filter-chip').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  render();
+}
+
+function setGroupFilter(g){
+  groupFilter = g;
+  document.querySelectorAll('.gchip').forEach(b=>b.classList.remove('active'));
   event.target.classList.add('active');
   render();
 }
